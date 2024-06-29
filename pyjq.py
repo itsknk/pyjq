@@ -29,8 +29,11 @@ class pyjq:
         If the data is a dictionary, extract the value for the specified key.
         Return the extracted data.
         """
+        if data is None:
+            return None
+
         if standard.isdigit():
-            standard= int(standard)
+            standard = int(standard)
         
         if isinstance(standard, int):
             if isinstance(data, list):
@@ -39,9 +42,11 @@ class pyjq:
                 data = None
         else:
             if isinstance(data, list):
-                data = [i.get(standard, None) for i in data]
-            else:
+                data = [i.get(standard, None) for i in data if isinstance(i, dict)]
+            elif isinstance(data, dict):
                 data = data.get(standard, None)
+            else:
+                data = None
 
         return data
     
@@ -54,6 +59,9 @@ class pyjq:
         Handle cases where the filter is in the format field[index], splitting it into two parts and processing each part separately.
         Process standard field names.
         """
+        if data is None:
+            return None
+
         if filter_part == '.':
             return data
         
