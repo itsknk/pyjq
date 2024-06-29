@@ -1,6 +1,87 @@
 import json
 
 class pyjq:
+
+    def __init__(self, json_str):
+        self.comma = ","
+        self.quotes = ["'", '"']
+        self.open = ["{", "["]
+        self.close = ["}", "]"]
+        self.level = 0
+        self.spl_char = ["{", "}", "[", "]"]
+        self.json_str = json_str
+        self.default_space = 2
+
+
+    def leave_space(self):
+        """
+        Returns a string of spaces corresponding to the current indentation level.
+        Used to format the output with current amount of indentation.
+        """
+        return " " * self.level
+
+
+    def pretty_print(self):
+        """
+        Iterates through the json string, character by character and builds a pretty-printed json.
+        The current variable holds the current state of the formatted json string.
+        """
+        index = 0
+        current = ""
+        """
+        When a quote character is encountered, code enters a loop to cpature all characters until the matching closing quote is found.
+        The captured text is enclosed in quotes and appened to current.
+
+        When an opening brace { or [ is encountered, it is appended to current.
+        The indentation level is increased by default space.
+        A newline and appropriate amount of spaces are added to the current.
+
+        When a closing brace } or ] is found, it checks if the previous character was not a closing brace.
+        If not, it addes a newline to the current.
+        The indentation level is decreased.
+        The closing brace is added to the current, along with appropriate space.
+        If the the next character is not a comma, a newline and appropriate spacing are added.
+
+        When a comma is encountered, a newline is added.
+        If the previous character was not a closing brace, the appropriate space is added for the next line.
+        """
+        while index < len(self.json_str):
+            if self.json_str[index] in self.quotes:
+                text = ""
+                index += 1
+                while self.json_str[index] not in self.quotes:
+                    text += self.json_str[index]
+                    index += 1
+                current += "'" + text + "'"
+
+            elif self.json_str[index] in self.open:
+                current += self.json_str[index]
+                self.level += self.default_space
+                if (index + 1 < len(self.json_str) and self.json_str[index + 1] != self.comma):
+                    current += "\n"
+                    current += self.leave_space()
+
+            elif self.json_str[index] in self.close:
+                if self.json_str[index-1] not in self.close:
+                    current += "\n"
+                self.level -= self.default_space
+                current += self.leave_space()
+                current += self.json_str[index]
+                if (index + 1 < len(self.json_str) and self.json_str[index + 1 != self.comma]):
+                    current += "\n"
+                    current += self.leave_space()
+
+            else:
+                current += self.json_str[index]
+                if self.json_str[index] == self.comma:
+                    current += "\n"
+                if self.json_str[index - 1] != self.close:
+                    current += self.leave_space()
+            index += 1
+        print(current)
+        return 0
+    
+    
     def parse_argument(self, pyjq_arg):
         """
         Check if the argument starts and ends with [], which indicates result should be a list.
@@ -20,6 +101,7 @@ class pyjq:
             data = self.apply_filter(data, filter_part)
         
         return [data] if as_list else data
+    
     
     def extract_data(self, data, standard):
         """
@@ -50,6 +132,7 @@ class pyjq:
 
         return data
     
+
     def apply_filter(self, data, filter_part):
         """
         If the filter is ., it means no filtering is needed.
@@ -101,11 +184,15 @@ example_json = '''
 }
 '''
 
-# Instance of pyjq
-jq = pyjq()
-jq.json_str = example_json
+# Creating an instance of pyjq
+jq = pyjq(example_json)
 
-# Example tests with print statements
+# Testing pretty_print
+print("Pretty Printed JSON:")
+jq.pretty_print()
+
+# Testing parse_argument
+print("\nParsed Arguments:")
 print(jq.parse_argument('[.quotes[].quote]'))       # Should print: ['First Quote', 'Second Quote']
 print(jq.parse_argument('[.quotes[1].quote]'))      # Should print: ['Second Quote']
 print(jq.parse_argument('.quotes[1].quote'))        # Should print: Second Quote
@@ -114,4 +201,4 @@ print(jq.parse_argument('.codingchallenge?'))       # Should print: Complete
 print(jq.parse_argument('.["codingchallenge"]'))    # Should print: Complete
 print(jq.parse_argument('.["codingchallenge"]?'))   # Should print: Complete
 print(jq.parse_argument('.quotes'))                 # Should print: [{'quote': 'First Quote'}, {'quote': 'Second Quote'}]
-print(jq.parse_argument('.[0] | .commit.message'))  # Should print: Initial commit
+print(jq.parse_argument('.commit.message'))  
