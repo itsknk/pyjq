@@ -1,6 +1,7 @@
 import json
+import sys
 
-class pyjq:
+class PYJQ:
 
     def __init__(self, json_str):
         self.comma = ","
@@ -170,35 +171,28 @@ class pyjq:
         return data   
 
 
-# Example
-example_json = '''
-{
-    "quotes": [
-        {"quote": "First Quote"},
-        {"quote": "Second Quote"}
-    ],
-    "codingchallenge": "Complete",
-    "commit": {
-        "message": "Initial commit"
-    }
-}
-'''
+def main():
+    """
+    Extract the json string from command-line argument 1
+    Extract the pyjq argument from command-line argument 2
 
-# Creating an instance of pyjq
-jq = pyjq(example_json)
+    Create an instance of PYJQ class with provided json string
 
-# Testing pretty_print
-print("Pretty Printed JSON:")
-jq.pretty_print()
+    Parse the pyjq argument and get the result
+    Update json_str with the parsed result.
 
-# Testing parse_argument
-print("\nParsed Arguments:")
-print(jq.parse_argument('[.quotes[].quote]'))       # Should print: ['First Quote', 'Second Quote']
-print(jq.parse_argument('[.quotes[1].quote]'))      # Should print: ['Second Quote']
-print(jq.parse_argument('.quotes[1].quote'))        # Should print: Second Quote
-print(jq.parse_argument('.codingchallenge'))        # Should print: Complete
-print(jq.parse_argument('.codingchallenge?'))       # Should print: Complete
-print(jq.parse_argument('.["codingchallenge"]'))    # Should print: Complete
-print(jq.parse_argument('.["codingchallenge"]?'))   # Should print: Complete
-print(jq.parse_argument('.quotes'))                 # Should print: [{'quote': 'First Quote'}, {'quote': 'Second Quote'}]
-print(jq.parse_argument('.commit.message'))  
+    Pretty print the updated json result
+    """
+    json_str = sys.argv[1]
+
+    pyjq_arg = sys.argv[2]
+
+    pyjq = PYJQ(json_str)
+
+    pyjq.json_str = str(pyjq.parse_argument(pyjq_arg))
+
+    pyjq.pretty_print()
+
+
+if __name__ == "__main__":
+    main()
